@@ -1,5 +1,5 @@
-![pylint score](https://github.com/Kencho/dms_2020-2021_draft/workflows/pylint%20score/badge.svg)
-![mypy typechecking](https://github.com/Kencho/dms_2020-2021_draft/workflows/mypy%20typechecking/badge.svg)
+![pylint score](https://github.com/Kencho/practica-dms-2020-2021/workflows/pylint%20score/badge.svg)
+![mypy typechecking](https://github.com/Kencho/practica-dms-2020-2021/workflows/mypy%20typechecking/badge.svg)
 
 # DMS course project codebase, academic year 2020-2021
 
