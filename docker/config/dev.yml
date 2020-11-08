@@ -1,0 +1,64 @@
+version: '3'
+services:
+  auth:
+    build:
+      context: ../images/service
+    image: dms2021-service
+    container_name: dms2021auth
+    volumes:
+      - ../../components/dms2021core:/tmp/deps/src/core:ro
+      - ../../components/dms2021auth:/tmp/src:ro
+      - ./dms2021-auth:/root/.config:ro
+    networks:
+      app_net:
+        ipv4_address: 172.10.1.10
+
+  sensor1:
+    build:
+      context: ../images/service
+    image: dms2021-service
+    container_name: dms2021sensor1
+    volumes:
+      - ../../components/dms2021core:/tmp/deps/src/core:ro
+      - ../../components/dms2021sensor:/tmp/src:ro
+      - ./dms2021-sensor1:/root/.config:ro
+      - /tmp/sensor1-volume:/tmp/sensor-volume
+    networks:
+      app_net:
+        ipv4_address: 172.10.1.21
+
+  sensor2:
+    build:
+      context: ../images/service
+    image: dms2021-service
+    container_name: dms2021sensor2
+    volumes:
+      - ../../components/dms2021core:/tmp/deps/src/core:ro
+      - ../../components/dms2021sensor:/tmp/src:ro
+      - ./dms2021-sensor2:/root/.config:ro
+      - /tmp/sensor2-volume:/tmp/sensor-volume
+    networks:
+      app_net:
+        ipv4_address: 172.10.1.22
+
+  client:
+    build:
+      context: ../images/service
+    image: dms2021-service
+    container_name: dms2021client
+    volumes:
+      - ../../components/dms2021core:/tmp/deps/src/core:ro
+      - ../../components/dms2021client:/tmp/src:ro
+      - ./dms2021-client:/root/.config:ro
+    networks:
+      app_net:
+        ipv4_address: 172.10.1.30
+    stdin_open: true
+    tty: true
+
+networks:
+  app_net:
+    ipam:
+      driver: default
+      config:
+        - subnet: '172.10.1.0/24'

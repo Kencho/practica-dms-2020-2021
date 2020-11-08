@@ -1,0 +1,11 @@
+debug: true
+auth_service:
+  host: '172.10.1.10'
+  port: 5000
+sensors:
+  sensor1:
+    host: '172.10.1.21'
+    port: 5000
+  sensor2:
+    host: '172.10.1.22'
+    port: 5000

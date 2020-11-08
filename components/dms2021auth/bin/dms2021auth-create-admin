@@ -1,0 +1,17 @@
+#!/usr/bin/env python3
+
+from dms2021core.data import UserRightName
+from dms2021auth.data.config import AuthConfiguration
+from dms2021auth.data.db import Schema
+from dms2021auth.logic import UserManager, UserSessionManager, UserRightManager, UserRightValidator
+
+cfg: AuthConfiguration = AuthConfiguration()
+cfg.load_from_file(cfg.default_config_file())
+db: Schema = Schema(cfg)
+user_right_validator: UserRightValidator = UserRightValidator(db)
+user_manager: UserManager = UserManager(cfg, db)
+user_session_manager: UserSessionManager = UserSessionManager(cfg, db, user_manager)
+user_right_manager: UserRightManager = UserRightManager(cfg, db, user_session_manager)
+user_manager.create_user('admin', 'admin', '', user_right_validator, superuser=True)
+user_right_manager.grant('admin', UserRightName.AdminUsers, '', user_right_validator, superuser=True)
+user_right_manager.grant('admin', UserRightName.AdminRights, '', user_right_validator, superuser=True)

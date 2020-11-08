@@ -1,0 +1,33 @@
+# This workflow will install Python dependencies and lint with a single version of Python
+
+name: mypy typechecking
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  typechecking:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install mypy pyyaml sqlalchemy flask
+      - name: Run typechecking
+        run: |
+          scripts/verify-type-correctness.sh > typechecking.txt
+      - name: Archive typechecking report
+        uses: actions/upload-artifact@v2
+        with:
+          name: typechecking-report
+          path: |
+            typechecking.txt

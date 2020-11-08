@@ -1,0 +1,2 @@
+""" Sensor configuration classes.
+"""

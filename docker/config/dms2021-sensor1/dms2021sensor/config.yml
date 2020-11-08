@@ -1,0 +1,7 @@
+db_connection_string: 'sqlite:////tmp/database.db'
+host: '172.10.1.21'
+port: 5000
+debug: true
+auth_service:
+  host: '172.10.1.10'
+  port: 5000

@@ -1,0 +1,37 @@
+#!/usr/bin/env python3
+
+import time
+from getpass import getpass
+from dms2021client.data.config import ClientConfiguration
+from dms2021client.data.rest import AuthService
+from dms2021client.data.rest.exc import InvalidCredentialsError, UnauthorizedError
+
+cfg: ClientConfiguration = ClientConfiguration()
+cfg.load_from_file(cfg.default_config_file())
+auth_service: AuthService = AuthService(cfg.get_auth_service_host(), cfg.get_auth_service_port())
+
+print("This file is a stub. Replace this behaviour with the actual service code.")
+
+while not auth_service.is_running():
+    time.sleep(1)
+print("\nAuthentication service up!")
+
+while True:
+    print("Press Ctrl+C to end this process.")
+    print("If run as a docker container, press Ctrl+P,Ctrl+Q to detach from the container.")
+    username: str = input('Username: ')
+    password: str = getpass('Password: ')
+    try:
+        session_id: str = auth_service.login(username, password)
+        print('Logged in successfully as ' + username + ' . Session id: ' + session_id)
+        try:
+            auth_service.logout(session_id)
+            print('Logged out successfully.')
+        except UnauthorizedError:
+            print('Wrong session id.')
+        except Exception as ex:
+            print(ex)
+    except InvalidCredentialsError:
+        print('Wrong username and/or password. Try again.')
+    except Exception as ex:
+        print(ex)

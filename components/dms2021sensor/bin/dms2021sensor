@@ -1,0 +1,8 @@
+#!/usr/bin/env python3
+
+import time
+
+print("This file is a stub. Replace this behaviour with the actual service code.")
+
+while True:
+    time.sleep(1)

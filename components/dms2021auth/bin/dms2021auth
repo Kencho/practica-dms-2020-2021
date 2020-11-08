@@ -1,0 +1,100 @@
+#!/usr/bin/env python3
+
+import logging
+from flask import Flask, request
+from flask.logging import default_handler
+
+from dms2021core.data.rest import RestResponse
+from dms2021auth.data.config import AuthConfiguration
+from dms2021auth.data.db import Schema
+from dms2021auth.logic import UserManager, UserSessionManager, UserRightManager, UserRightValidator
+from dms2021auth.presentation.rest import User, UserSession, UserRight
+
+app = Flask(__name__)
+root_logger = logging.getLogger()
+root_logger.addHandler(default_handler)
+
+cfg: AuthConfiguration = AuthConfiguration()
+cfg.load_from_file(cfg.default_config_file())
+db: Schema = Schema(cfg)
+user_right_validator: UserRightValidator = UserRightValidator(db)
+user_manager: UserManager = UserManager(cfg, db)
+user_session_manager: UserSessionManager = UserSessionManager(cfg, db, user_manager)
+user_right_manager: UserRightManager = UserRightManager(cfg, db, user_session_manager)
+user_rest_api: User = User(user_manager, user_right_validator)
+user_session_rest_api: UserSession = UserSession(user_session_manager)
+user_right_rest_api: UserRight = UserRight(user_right_manager, user_right_validator)
+
+
+@app.route('/', methods=['GET'])
+def is_running():
+    return ('', 200, {'Content-Type': 'text/plain'})
+
+
+@app.route('/users', methods=['POST'])
+def create_user():
+    username: str = request.form['username']
+    password: str = request.form['password']
+    try:
+        session_id: str = request.form['session_id']
+    except KeyError:
+        session_id: str = ''
+    response: RestResponse = user_rest_api.create(username, password, session_id)
+    return (response.get_content(), response.get_code(), {'Content-Type': response.get_mime_type()})
+
+
+@app.route('/users/<string:username>/rights/<string:right_name>', methods=['GET'])
+def has_right(username: str, right_name: str):
+    response: RestResponse = user_right_rest_api.has_right(username, right_name)
+    return (response.get_content(), response.get_code(), {'Content-Type': response.get_mime_type()})
+
+
+@app.route('/users/<string:username>/rights/<string:right_name>', methods=['POST'])
+def grant_right(username: str, right_name: str):
+    try:
+        session_id: str = request.form['session_id']
+    except KeyError:
+        session_id: str = ''
+    response: RestResponse = user_right_rest_api.grant(username, right_name, session_id)
+    return (response.get_content(), response.get_code(), {'Content-Type': response.get_mime_type()})
+
+
+@app.route('/users/<string:username>/rights/<string:right_name>', methods=['DELETE'])
+def revoke_right(username: str, right_name: str):
+    try:
+        session_id: str = request.form['session_id']
+    except KeyError:
+        session_id: str = ''
+    response: RestResponse = user_right_rest_api.revoke(username, right_name, session_id)
+    return (response.get_content(), response.get_code(), {'Content-Type': response.get_mime_type()})
+
+
+@app.route('/sessions', methods=['POST'])
+def login():
+    username: str = request.form['username']
+    password: str = request.form['password']
+    response: RestResponse = user_session_rest_api.login(username, password)
+    return (response.get_content(), response.get_code(), {'Content-Type': response.get_mime_type()})
+
+
+@app.route('/sessions', methods=['DELETE'])
+def logout():
+    session_id: str = request.form['session_id']
+    response: RestResponse = user_session_rest_api.logout(session_id)
+    return (response.get_content(), response.get_code(), {'Content-Type': response.get_mime_type()})
+
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    if cfg.get_debug_flag():
+        app.logger.error(str(type(e)))
+        app.logger.error(e)
+    return ('', 500)
+
+
+if __name__ == '__main__':
+    app.run(
+        host=cfg.get_service_host(),
+        port=cfg.get_service_port(),
+        debug=cfg.get_debug_flag()
+    )
